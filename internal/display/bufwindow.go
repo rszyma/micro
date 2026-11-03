@@ -263,12 +263,31 @@ func (w *BufWindow) Relocate() bool {
 	return ret
 }
 
+// ViewX returns the absolute screen column of the window.
+func (w *BufWindow) ViewX() int {
+	return w.X
+}
+
+// ViewGutter returns the gutter width (line numbers, diff markers, ...).
+func (w *BufWindow) ViewGutter() int {
+	return w.gutterOffset
+}
+
+// ViewStartCol returns the horizontal scroll offset in visual cells.
+func (w *BufWindow) ViewStartCol() int {
+	return w.StartCol
+}
+
+// ViewMetrics returns the window geometry mouse mapping needs.
+func (w *BufWindow) ViewMetrics() (x, gutter, startCol int) {
+	return w.X, w.gutterOffset, w.StartCol
+}
+
 // LocFromVisual takes a visual location (x and y position) and returns the
 // position in the buffer corresponding to the visual location
 // If the requested position does not correspond to a buffer location it returns
 // the nearest position
-func (w *BufWindow) LocFromVisual(svloc buffer.Loc) buffer.Loc {
-	vx := svloc.X - w.X - w.gutterOffset
+func (w *BufWindow) LocFromVisual(svloc buffer.Loc) buffer.Loc {	vx := svloc.X - w.X - w.gutterOffset
 	if vx < 0 {
 		vx = 0
 	}
@@ -277,6 +296,25 @@ func (w *BufWindow) LocFromVisual(svloc buffer.Loc) buffer.Loc {
 		VisualX: vx + w.StartCol,
 	}
 	return w.LocFromVLoc(vloc)
+}
+
+// LocFromVisualFrac is LocFromVisual with a fractional cell offset in X.
+// The fraction is the position inside the clicked cell: 0 is the left
+// edge, 1 the right edge. It selects the nearest cursor position inside
+// the clicked rune instead of always snapping to its left edge. It is
+// used for pixel-precision mouse reports (SGR pixel mode), where the
+// click position inside a cell is known. A frac of 0 behaves exactly
+// like LocFromVisual.
+func (w *BufWindow) LocFromVisualFrac(svloc buffer.Loc, fracX float64) buffer.Loc {
+	vx := svloc.X - w.X - w.gutterOffset
+	if vx < 0 {
+		vx = 0
+	}
+	vloc := VLoc{
+		SLoc:    w.Scroll(w.StartLine, svloc.Y-w.Y),
+		VisualX: vx + w.StartCol,
+	}
+	return w.LocFromVLocFrac(vloc, fracX)
 }
 
 func (w *BufWindow) drawGutter(vloc *buffer.Loc, bloc *buffer.Loc) {

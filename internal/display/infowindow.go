@@ -72,6 +72,18 @@ func (i *InfoWindow) LocFromVisual(vloc buffer.Loc) buffer.Loc {
 	return buffer.Loc{c.GetCharPosInLine(l, vloc.X-n), 0}
 }
 
+func (i *InfoWindow) LocFromVisualFrac(vloc buffer.Loc, fracX float64) buffer.Loc {
+	l := i.Buffer.LineBytes(0)
+	n := util.CharacterCountInString(i.Msg)
+	tabsize := 4
+	x := util.GetCharPosInLineFrac(l, float64(vloc.X-n)+fracX, tabsize)
+	return buffer.Loc{x, 0}
+}
+
+func (i *InfoWindow) ViewMetrics() (x, gutter, startCol int) {
+	return 0, util.CharacterCountInString(i.Msg), 0
+}
+
 func (i *InfoWindow) BufView() View {
 	return View{
 		X:         0,

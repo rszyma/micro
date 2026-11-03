@@ -111,7 +111,7 @@ func (t *TabList) HandleEvent(event tcell.Event) {
 	case *tcell.EventResize:
 		t.Resize()
 	case *tcell.EventMouse:
-		mx, my := e.Position()
+		mx, my, _ := mouseEventCells(e, 0, 0)
 		switch e.Buttons() {
 		case tcell.Button1:
 			if my == t.Y && tabBarVisible(len(t.List)) {
@@ -283,7 +283,7 @@ func NewTabFromPane(x, y, width, height int, pane Pane) *Tab {
 func (t *Tab) HandleEvent(event tcell.Event) {
 	switch e := event.(type) {
 	case *tcell.EventMouse:
-		mx, my := e.Position()
+		mx, my, _ := mouseEventCells(e, 0, 0)
 		btn := e.Buttons()
 		switch {
 		case btn & ^(tcell.WheelUp|tcell.WheelDown|tcell.WheelLeft|tcell.WheelRight) != tcell.ButtonNone:

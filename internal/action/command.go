@@ -591,9 +591,9 @@ func doSetGlobalOptionNative(option string, nativeValue any) error {
 		Tabs.Resize()
 	} else if option == "mouse" {
 		if !nativeValue.(bool) {
-			screen.Screen.DisableMouse()
+			screen.DisableMouse()
 		} else {
-			screen.Screen.EnableMouse()
+			screen.EnableMousePixel()
 		}
 	} else if option == "autosave" {
 		if nativeValue.(float64) > 0 {

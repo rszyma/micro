@@ -229,8 +229,8 @@ func (t *TermPane) HandleEvent(event tcell.Event) {
 	} else if e, ok := event.(*tcell.EventMouse); !ok || t.State.Mode(terminal.ModeMouseMask) {
 		// t.WriteString(event.EscSeq())
 	} else {
-		x, y := e.Position()
 		v := t.GetView()
+		x, y, _ := mouseEventCells(e, v.X, v.Y)
 		x -= v.X
 		y -= v.Y
 

@@ -340,3 +340,120 @@ func (w *BufWindow) LocFromVLoc(vloc VLoc) buffer.Loc {
 	}
 	return w.getLocFromVLoc(vloc)
 }
+
+// getLocFromVLocFrac is getLocFromVLoc with a fractional visual X
+// position. The fraction selects the nearest cursor position inside
+// the clicked rune: left half stays before the rune, right half moves
+// past it. A frac of 0 or less behaves exactly like getLocFromVLoc.
+func (w *BufWindow) getLocFromVLocFrac(svloc VLoc, frac float64) buffer.Loc {
+	if frac <= 0 {
+		return w.getLocFromVLoc(svloc)
+	}
+
+	loc := buffer.Loc{X: 0, Y: svloc.Line}
+
+	if w.bufWidth <= 0 {
+		return loc
+	}
+
+	target := float64(svloc.VisualX) + frac
+
+	wordwrap := w.Buf.Settings["wordwrap"].(bool)
+	tabsize := util.IntOpt(w.Buf.Settings["tabsize"])
+
+	line := w.Buf.LineBytes(svloc.Line)
+	vloc := VLoc{SLoc: SLoc{svloc.Line, 0}, VisualX: 0}
+
+	totalwidth := 0
+
+	var widths []int
+	if wordwrap {
+		widths = make([]int, 0, w.bufWidth)
+	} else {
+		widths = make([]int, 0, 1)
+	}
+	wordwidth := 0
+
+	for len(line) > 0 {
+		r, _, size := util.DecodeCharacter(line)
+		line = line[size:]
+
+		width := 0
+		switch r {
+		case '\t':
+			ts := tabsize - (totalwidth % tabsize)
+			width = util.Min(ts, w.bufWidth-vloc.VisualX)
+			totalwidth += ts
+		default:
+			width = runewidth.RuneWidth(r)
+			totalwidth += width
+		}
+
+		widths = append(widths, width)
+		wordwidth += width
+
+		// Collect a complete word to know its width.
+		// If wordwrap is off, every single character is a complete "word".
+		if wordwrap {
+			if !util.IsWhitespace(r) && len(line) > 0 && wordwidth < w.bufWidth {
+				continue
+			}
+		}
+
+		// If a word (or just a wide rune) does not fit in the window
+		if vloc.VisualX+wordwidth > w.bufWidth && vloc.VisualX > 0 {
+			if vloc.Row == svloc.Row {
+				if wordwrap {
+					// it's a word, not a wide rune
+					loc.X--
+				}
+				return loc
+			}
+			vloc.Row++
+			vloc.VisualX = 0
+		}
+
+		for i := range widths {
+			vloc.VisualX += widths[i]
+			if vloc.Row == svloc.Row && float64(vloc.VisualX) > target {
+				rw := float64(widths[i])
+				half := rw / 2
+				if rw <= 1 {
+					half = 0.5
+				}
+				if float64(vloc.VisualX)-target > half {
+					// left half: stay before the rune
+					return loc
+				}
+				// right half: move past the rune
+				loc.X++
+				return loc
+			}
+			loc.X++
+		}
+
+		widths = widths[:0]
+		wordwidth = 0
+
+		if vloc.VisualX >= w.bufWidth {
+			vloc.Row++
+			vloc.VisualX = 0
+		}
+	}
+	return loc
+}
+
+// LocFromVLocFrac is LocFromVLoc with a fractional visual X position.
+// The fraction selects the nearest cursor position inside a rune: left
+// half stays before the rune, right half moves past it. It is used for
+// pixel-precision mouse clicks, where the click position inside a cell
+// is known. An integer frac behaves exactly like LocFromVLoc.
+func (w *BufWindow) LocFromVLocFrac(vloc VLoc, frac float64) buffer.Loc {
+	if !w.Buf.Settings["softwrap"].(bool) {
+		tabsize := util.IntOpt(w.Buf.Settings["tabsize"])
+
+		x := util.GetCharPosInLineFrac(w.Buf.LineBytes(vloc.Line), float64(vloc.VisualX)+frac, tabsize)
+		return buffer.Loc{x, vloc.Line}
+	}
+	return w.getLocFromVLocFrac(vloc, frac)
+}

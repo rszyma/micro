@@ -26,6 +26,54 @@ var Events chan tcell.Event
 // temporarily shut down
 var RestartCallback func()
 
+// MousePixel tracks whether the screen delivers mouse positions in
+// terminal pixels (SGR pixel mode, CSI ?1016h) instead of character
+// cells. It is set by EnableMousePixel and cleared by DisableMouse.
+// Pixel reports let clicks resolve to the nearest cursor position inside
+// a cell; cell reports always snap to the left edge of the clicked rune.
+var MousePixel bool
+
+// enableMousePixelLocked enables pixel mouse reporting when the terminal
+// reports a usable cell-pixel size, and falls back to plain cell
+// reporting (with MousePixel left false) otherwise.
+func enableMousePixelLocked() {
+	if cw, ch := Screen.MousePixelSize(); cw > 0 && ch > 0 {
+		Screen.EnableMouse(
+			tcell.MouseButtonEvents,
+			tcell.MouseDragEvents,
+			tcell.MouseMotionEvents,
+			tcell.MousePixelEvents,
+		)
+		MousePixel = true
+		return
+	}
+	Screen.EnableMouse()
+	MousePixel = false
+}
+
+// EnableMousePixel enables mouse reporting with pixel precision when the
+// terminal supports it (SGR pixel mode). When the cell-pixel size is
+// unknown it falls back to normal cell reporting.
+func EnableMousePixel() {
+	Lock()
+	defer Unlock()
+	if Screen == nil {
+		return
+	}
+	enableMousePixelLocked()
+}
+
+// DisableMouse disables mouse reporting and clears the pixel mode flag.
+func DisableMouse() {
+	Lock()
+	defer Unlock()
+	if Screen == nil {
+		return
+	}
+	Screen.DisableMouse()
+	MousePixel = false
+}
+
 // The lock is necessary since the screen is polled on a separate thread
 var lock sync.Mutex
 
@@ -212,7 +260,7 @@ func Init() error {
 	}
 
 	if config.GetGlobalOption("mouse").(bool) {
-		Screen.EnableMouse()
+		enableMousePixelLocked()
 	}
 
 	Events = Screen.EventQ()
@@ -248,7 +296,7 @@ func InitMockScreen() (vt.MockTerm, error) {
 	Events = Screen.EventQ()
 
 	if config.GetGlobalOption("mouse").(bool) {
-		Screen.EnableMouse()
+		enableMousePixelLocked()
 	}
 
 	return mt, nil

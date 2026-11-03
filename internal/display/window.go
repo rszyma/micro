@@ -34,4 +34,6 @@ type BWindow interface {
 	SoftWrap
 	SetBuffer(b *buffer.Buffer)
 	BufView() View
+	LocFromVisualFrac(vloc buffer.Loc, fracX float64) buffer.Loc
+	ViewMetrics() (x, gutter, startCol int)
 }

@@ -569,24 +569,54 @@ func IntOpt(opt any) int {
 // coordinate (this is necessary because tabs are 1 char but
 // 4 visual spaces)
 func GetCharPosInLine(b []byte, visualPos int, tabsize int) int {
+	return GetCharPosInLineFrac(b, float64(visualPos), tabsize)
+}
+
+// GetCharPosInLineFrac is GetCharPosInLine with a fractional visual
+// position: a click on the left half of a rune selects the cursor position
+// before it, a click on the right half selects the position after it.
+// A fractional position inside a multi-cell rune (wide runes, tabs) always
+// resolves to the nearest of the two adjacent cursor positions. An integer
+// visualPos behaves exactly like GetCharPosInLine (the boundary belongs to
+// the right position), so existing callers are unaffected.
+func GetCharPosInLineFrac(b []byte, visualPos float64, tabsize int) int {
 	// Scan rune by rune until we exceed the visual width that we are
-	// looking for. Then we can return the character position we have found
+	// looking for. Then we can return the character position we have found.
+	// A fractional position inside a rune resolves to the nearest edge:
+	// left half keeps the cursor before the rune, right half moves past it.
 	i := 0     // char pos
 	width := 0 // string visual width
 	for len(b) > 0 {
 		r, _, size := DecodeCharacter(b)
 		b = b[size:]
 
+		rw := 0
 		switch r {
 		case '\t':
 			ts := tabsize - (width % tabsize)
 			width += ts
+			rw = ts
 		default:
-			width += runewidth.RuneWidth(r)
+			rw = runewidth.RuneWidth(r)
+			width += rw
 		}
+		_ = rw
 
-		if width >= visualPos {
-			if width == visualPos {
+		if float64(width) >= visualPos {
+			if float64(width) == visualPos {
+				i++
+			} else if rw > 1 && float64(width)-visualPos > float64(rw)/2 {
+				// Click on the left half of a multi-cell rune:
+				// stay before it instead of snapping to the next char.
+			} else if rw <= 1 {
+				// Single-cell rune, click inside it: snap to the next
+				// char only when past its midpoint.
+				if float64(width)-visualPos > 0.5 {
+					// left half: stay before the rune
+				} else {
+					i++
+				}
+			} else {
 				i++
 			}
 			break
