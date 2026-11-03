@@ -37,8 +37,6 @@ github.com/micro-editor/go-shellquote v0.0.0-20250101105543-feb6c39314f5 h1:D7BP
 github.com/micro-editor/go-shellquote v0.0.0-20250101105543-feb6c39314f5/go.mod h1:zaPgW/fDiW4MUfEwxpC+GB/bhvX44NJaNHmRAC9auHQ=
 github.com/micro-editor/json5 v1.0.1-micro h1:5Y4MuzhkmW0sQQNPvrIVevIOKi557qsznwjRr4iq1AI=
 github.com/micro-editor/json5 v1.0.1-micro/go.mod h1:cmlPHZ1JKOXNse0/3zwwKj/GUpzAVkzx4lZDkpHl4q0=
-github.com/micro-editor/tcell/v3 v3.0.0-20260629163637-dedaf40206a5 h1:vwHFkhbdjyf5/XMPbPzSDYtXMOQJKvmwJA+nlrJHB9s=
-github.com/micro-editor/tcell/v3 v3.0.0-20260629163637-dedaf40206a5/go.mod h1:Ev/2PFhL0QtVmu6XPZG9NEuITAZ6XH7i7/BF3wupBdw=
 github.com/micro-editor/terminal v0.0.0-20250324214352-e587e959c6b5 h1:czSkYUNmHuWS2lv8VreufENEXZNOCGZcXd744YKf8yM=
 github.com/micro-editor/terminal v0.0.0-20250324214352-e587e959c6b5/go.mod h1:OszIG7ockt4osicVHq6gI2QmV4PBDK6H5/Bj8GDGv4Q=
 github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG+4E0Y=
@@ -49,6 +47,8 @@ github.com/rivo/uniseg v0.2.0 h1:S1pD9weZBuJdFmowNwbpi7BJ8TNftyUImj/0WQi72jY=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/robertkrimen/otto v0.2.1 h1:FVP0PJ0AHIjC+N4pKCG9yCDz6LHNPCwi/GKID5pGGF0=
 github.com/robertkrimen/otto v0.2.1/go.mod h1:UPwtJ1Xu7JrLcZjNWN8orJaM5n5YEtqL//farB5FlRY=
+github.com/rszyma/micro-tcell/v3 v3.0.0-20261103195005-e7f8d07f94b4 h1:/gL2rcV9Js3A1HjK+hKUPcJ3r3cQUlNAgJtbSvccmrQ=
+github.com/rszyma/micro-tcell/v3 v3.0.0-20261103195005-e7f8d07f94b4/go.mod h1:Ev/2PFhL0QtVmu6XPZG9NEuITAZ6XH7i7/BF3wupBdw=
 github.com/sergi/go-diff v1.1.0 h1:we8PVUC3FE2uYfodKH/nBHMSetSfHDR6scGdBi+erh0=
 github.com/sergi/go-diff v1.1.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNXdaHfM=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
